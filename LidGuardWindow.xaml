@@ -347,329 +347,533 @@
     <!-- Main Content Container -->
     <StackPanel Margin="22,16,22,22">
 
-        <!-- Page Header + Version Pill -->
-        <Grid Margin="2,0,2,12">
+        <!-- Page Header + Navigation Tabs (Settings | About) -->
+        <Grid Margin="2,0,2,14">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            <TextBlock Grid.Column="0"
-                       Text="LidGuard"
-                       FontSize="22"
-                       FontWeight="Bold"
-                       Foreground="{DynamicResource TextPrimaryBrush}"
-                       VerticalAlignment="Center"/>
-            <TextBlock x:Name="TxtVersionTag"
-                       Grid.Column="1"
-                       Text="v1.0.0"
-                       FontSize="12"
-                       Foreground="{DynamicResource TextSecondaryBrush}"
-                       VerticalAlignment="Bottom"
-                       Margin="0,0,2,3"/>
-        </Grid>
 
-        <!-- 1. Live Status Fluent Card -->
-        <Border Style="{StaticResource FluentCard}" Padding="16,13" Margin="0,0,0,14">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-
-                <Ellipse x:Name="StatusDot"
-                         Grid.Column="0"
-                         Width="12"
-                         Height="12"
-                         Fill="#0067C0"
-                         VerticalAlignment="Center"
-                         Margin="2,0,14,0"/>
-
-                <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                    <TextBlock x:Name="TxtStatusHeadline"
-                               Text="Lid Close: Sleep  •  Balanced"
-                               FontSize="14"
-                               FontWeight="SemiBold"
-                               Foreground="{DynamicResource TextPrimaryBrush}"
-                               TextTrimming="CharacterEllipsis"/>
-                    <TextBlock x:Name="TxtStatusSub"
-                               Text="Internal Screen Only  •  Plugged In"
-                               FontSize="12"
-                               Foreground="{DynamicResource TextSecondaryBrush}"
-                               Margin="0,2,0,0"
-                               TextTrimming="CharacterEllipsis"/>
-                </StackPanel>
-
-                <Border Grid.Column="2"
-                        Style="{StaticResource InfoBadge}"
-                        ToolTip="Live hardware state detected via Windows QueryDisplayConfig and Modern Standby Power Overlay APIs.">
-                    <TextBlock Text="i" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource BadgeTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                </Border>
-            </Grid>
-        </Border>
-
-        <!-- 2. Automation Section -->
-        <StackPanel Orientation="Horizontal" Margin="2,0,0,6">
-            <TextBlock Text="Automation" FontSize="13.5" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
-            <Border Style="{StaticResource InfoBadge}"
-                    ToolTip="Automatically adjusts your plugged-in lid behavior and Windows power mode when an external display or dock is connected.">
-                <TextBlock Text="i" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource BadgeTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-            </Border>
-        </StackPanel>
-
-        <Border Style="{StaticResource FluentCard}" Margin="0,0,0,14">
-            <StackPanel>
-                <!-- Row 1: Lid Close Action -->
-                <Grid Height="46" Margin="16,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="Lid Close Action" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
-                        <Border Style="{StaticResource InfoBadge}"
-                                ToolTip="Auto sets Plugged-In Lid Close to 'Do Nothing' when projecting to an external display, and reverts to 'Sleep' when undocked.">
-                            <TextBlock Text="i" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource BadgeTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                    </StackPanel>
-                    <ComboBox x:Name="CmbLidBehavior"
-                              Grid.Column="1"
-                              Width="182"
-                              Style="{StaticResource Win11ComboBox}"
-                              ToolTip="Choose how LidGuard manages your plugged-in lid close setting.">
-                        <ComboBoxItem Content="Auto (Dock Aware)"/>
-                        <ComboBoxItem Content="Always Do Nothing"/>
-                        <ComboBoxItem Content="Always Sleep"/>
-                    </ComboBox>
-                </Grid>
-
-                <Rectangle Height="1" Fill="{DynamicResource RowDividerBrush}" Margin="16,0"/>
-
-                <!-- Row 2: Auto High Power Mode -->
-                <Grid Height="46" Margin="16,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="Auto High Power Mode" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
-                        <Border Style="{StaticResource InfoBadge}"
-                                ToolTip="Automatically switches Windows Modern Standby Power Mode to 'Best Performance' when docked &amp; plugged in, and reverts to 'Balanced' when undocked.">
-                            <TextBlock Text="i" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource BadgeTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                    </StackPanel>
-                    <CheckBox x:Name="TglAutoPower"
-                              Grid.Column="1"
-                              Style="{StaticResource Win11ToggleSwitch}"
-                              ToolTip="Toggle automatic switching between Best Performance and Balanced power modes."/>
-                </Grid>
+            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock Text="LidGuard"
+                           FontSize="22"
+                           FontWeight="Bold"
+                           Foreground="{DynamicResource TextPrimaryBrush}"
+                           VerticalAlignment="Center"/>
+                <TextBlock x:Name="TxtVersionTag"
+                           Text="v0.9"
+                           FontSize="12"
+                           Foreground="{DynamicResource TextSecondaryBrush}"
+                           VerticalAlignment="Bottom"
+                           Margin="8,0,0,3"/>
             </StackPanel>
-        </Border>
 
-        <!-- 3. Preferences, Shortcuts & Updates Section -->
-        <StackPanel Orientation="Horizontal" Margin="2,0,0,6">
-            <TextBlock Text="Preferences &amp; Shortcuts" FontSize="13.5" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
-            <Border Style="{StaticResource InfoBadge}"
-                    ToolTip="Configure notifications, Windows startup, Start Menu &amp; Desktop shortcuts, and GitHub updates.">
-                <TextBlock Text="i" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource BadgeTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-            </Border>
-        </StackPanel>
-
-        <Border Style="{StaticResource FluentCard}" Margin="0,0,0,14">
-            <StackPanel>
-                <!-- Row 1: Notifications -->
-                <Grid Height="44" Margin="16,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="Notifications" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
-                        <Border Style="{StaticResource InfoBadge}"
-                                ToolTip="Show a brief desktop banner when switching between Docked and Portable modes.">
-                            <TextBlock Text="i" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource BadgeTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                    </StackPanel>
-                    <CheckBox x:Name="TglNotifications"
-                              Grid.Column="1"
-                              Style="{StaticResource Win11ToggleSwitch}"/>
-                </Grid>
-
-                <Rectangle Height="1" Fill="{DynamicResource RowDividerBrush}" Margin="16,0"/>
-
-                <!-- Row 2: Start with Windows -->
-                <Grid Height="44" Margin="16,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="Start with Windows" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
-                        <Border Style="{StaticResource InfoBadge}"
-                                ToolTip="Automatically launch LidGuard minimized in the system tray when you sign in to Windows.">
-                            <TextBlock Text="i" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource BadgeTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                    </StackPanel>
-                    <CheckBox x:Name="TglStartup"
-                              Grid.Column="1"
-                              Style="{StaticResource Win11ToggleSwitch}"/>
-                </Grid>
-
-                <Rectangle Height="1" Fill="{DynamicResource RowDividerBrush}" Margin="16,0"/>
-
-                <!-- Row 3: Start Menu Shortcut -->
-                <Grid Height="44" Margin="16,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="Start Menu Shortcut" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
-                        <Border Style="{StaticResource InfoBadge}"
-                                ToolTip="Keep a LidGuard shortcut in the Windows Start Menu Programs list.">
-                            <TextBlock Text="i" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource BadgeTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                    </StackPanel>
-                    <CheckBox x:Name="TglStartMenuShortcut"
-                              Grid.Column="1"
-                              Style="{StaticResource Win11ToggleSwitch}"/>
-                </Grid>
-
-                <Rectangle Height="1" Fill="{DynamicResource RowDividerBrush}" Margin="16,0"/>
-
-                <!-- Row 4: Desktop Shortcut -->
-                <Grid Height="44" Margin="16,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="Desktop Shortcut" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
-                        <Border Style="{StaticResource InfoBadge}"
-                                ToolTip="Create or remove a LidGuard shortcut on your Windows Desktop.">
-                            <TextBlock Text="i" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource BadgeTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                    </StackPanel>
-                    <CheckBox x:Name="TglDesktopShortcut"
-                              Grid.Column="1"
-                              Style="{StaticResource Win11ToggleSwitch}"/>
-                </Grid>
-
-                <Rectangle Height="1" Fill="{DynamicResource RowDividerBrush}" Margin="16,0"/>
-
-                <!-- Row 5: GitHub Auto-Updates -->
-                <Grid Height="44" Margin="16,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock x:Name="TxtUpdateLabel" Text="Auto-Check Updates" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
-                        <Border Style="{StaticResource InfoBadge}"
-                                ToolTip="Checks GitHub Releases (SStarlight9614/Lid-Guard) for newer versions and installs updates.">
-                            <TextBlock Text="i" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource BadgeTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                    </StackPanel>
-                    <Button x:Name="BtnCheckUpdates"
-                            Grid.Column="1"
-                            Content="Check Now"
+            <!-- Segmented Tab Bar -->
+            <Border Grid.Column="1"
+                    Background="{DynamicResource CardBgBrush}"
+                    BorderBrush="{DynamicResource CardBorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="7"
+                    Padding="3"
+                    VerticalAlignment="Center"
+                    RenderOptions.ClearTypeHint="Enabled">
+                <StackPanel Orientation="Horizontal">
+                    <Button x:Name="BtnTabSettings"
+                            Content="Settings"
+                            Style="{StaticResource Win11AccentButton}"
+                            Height="28"
+                            MinWidth="82"
+                            Margin="0,0,3,0"/>
+                    <Button x:Name="BtnTabAbout"
+                            Content="About"
                             Style="{StaticResource Win11Button}"
                             Height="28"
-                            MinWidth="96"
-                            Margin="0,0,12,0"
-                            VerticalAlignment="Center"
-                            ToolTip="Check GitHub Releases for the latest LidGuard update."/>
-                    <CheckBox x:Name="TglAutoUpdates"
-                              Grid.Column="2"
-                              Style="{StaticResource Win11ToggleSwitch}"
-                              ToolTip="Automatically check GitHub Releases for updates in the background."/>
-                </Grid>
-            </StackPanel>
-        </Border>
+                            MinWidth="76"/>
+                </StackPanel>
+            </Border>
+        </Grid>
 
-        <!-- 4. Tray Menu Shortcuts Section -->
-        <StackPanel Orientation="Horizontal" Margin="2,0,0,6">
-            <TextBlock Text="Tray Menu Shortcuts" FontSize="13.5" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
-            <Border Style="{StaticResource InfoBadge}"
-                    ToolTip="By default, right-clicking the tray icon shows only 'Open Settings' and 'Exit'. Toggle on any extra shortcuts you want shown on right-click.">
-                <TextBlock Text="i" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource BadgeTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        <!-- =============================================================== -->
+        <!-- TAB 1: SETTINGS PANEL                                           -->
+        <!-- =============================================================== -->
+        <StackPanel x:Name="SettingsTabPanel" Visibility="Visible">
+
+            <!-- 1. Live Status Fluent Card -->
+            <Border Style="{StaticResource FluentCard}" Padding="16,13" Margin="0,0,0,14">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Ellipse x:Name="StatusDot"
+                             Grid.Column="0"
+                             Width="12"
+                             Height="12"
+                             Fill="#0067C0"
+                             VerticalAlignment="Center"
+                             Margin="2,0,14,0"/>
+
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock x:Name="TxtStatusHeadline"
+                                   Text="Lid Close: Sleep  •  Balanced"
+                                   FontSize="14"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextPrimaryBrush}"
+                                   TextTrimming="CharacterEllipsis"/>
+                        <TextBlock x:Name="TxtStatusSub"
+                                   Text="Internal Screen Only  •  Plugged In"
+                                   FontSize="12"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                   Margin="0,2,0,0"
+                                   TextTrimming="CharacterEllipsis"/>
+                    </StackPanel>
+
+                    <Border Grid.Column="2"
+                            Style="{StaticResource InfoBadge}"
+                            ToolTip="Live hardware state detected via Windows QueryDisplayConfig and Modern Standby Power Overlay APIs.">
+                        <TextBlock Text="i" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource BadgeTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <!-- 2. Automation Section -->
+            <StackPanel Orientation="Horizontal" Margin="2,0,0,6">
+                <TextBlock Text="Automation" FontSize="13.5" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                <Border Style="{StaticResource InfoBadge}"
+                        ToolTip="Automatically adjusts your plugged-in lid behavior and Windows power mode when an external display or dock is connected.">
+                    <TextBlock Text="i" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource BadgeTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
+            </StackPanel>
+
+            <Border Style="{StaticResource FluentCard}" Margin="0,0,0,14">
+                <StackPanel>
+                    <!-- Row 1: Lid Close Action -->
+                    <Grid Height="46" Margin="16,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="Lid Close Action" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                            <Border Style="{StaticResource InfoBadge}"
+                                    ToolTip="Auto sets Plugged-In Lid Close to 'Do Nothing' when projecting to an external display, and reverts to 'Sleep' when undocked.">
+                                <TextBlock Text="i" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource BadgeTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                        </StackPanel>
+                        <ComboBox x:Name="CmbLidBehavior"
+                                  Grid.Column="1"
+                                  Width="182"
+                                  Style="{StaticResource Win11ComboBox}"
+                                  ToolTip="Choose how LidGuard manages your plugged-in lid close setting.">
+                            <ComboBoxItem Content="Auto (Dock Aware)"/>
+                            <ComboBoxItem Content="Always Do Nothing"/>
+                            <ComboBoxItem Content="Always Sleep"/>
+                        </ComboBox>
+                    </Grid>
+
+                    <Rectangle Height="1" Fill="{DynamicResource RowDividerBrush}" Margin="16,0"/>
+
+                    <!-- Row 2: Auto High Power Mode -->
+                    <Grid Height="46" Margin="16,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="Auto High Power Mode" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                            <Border Style="{StaticResource InfoBadge}"
+                                    ToolTip="Automatically switches Windows Modern Standby Power Mode to 'Best Performance' when docked &amp; plugged in, and reverts to 'Balanced' when undocked.">
+                                <TextBlock Text="i" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource BadgeTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                        </StackPanel>
+                        <CheckBox x:Name="TglAutoPower"
+                                  Grid.Column="1"
+                                  Style="{StaticResource Win11ToggleSwitch}"
+                                  ToolTip="Toggle automatic switching between Best Performance and Balanced power modes."/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- 3. Preferences, Shortcuts & Updates Section -->
+            <StackPanel Orientation="Horizontal" Margin="2,0,0,6">
+                <TextBlock Text="Preferences &amp; Shortcuts" FontSize="13.5" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                <Border Style="{StaticResource InfoBadge}"
+                        ToolTip="Configure notifications, Windows startup, Start Menu &amp; Desktop shortcuts, and GitHub updates.">
+                    <TextBlock Text="i" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource BadgeTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
+            </StackPanel>
+
+            <Border Style="{StaticResource FluentCard}" Margin="0,0,0,14">
+                <StackPanel>
+                    <!-- Row 1: Notifications -->
+                    <Grid Height="44" Margin="16,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="Notifications" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                            <Border Style="{StaticResource InfoBadge}"
+                                    ToolTip="Show a brief desktop banner when switching between Docked and Portable modes.">
+                                <TextBlock Text="i" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource BadgeTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                        </StackPanel>
+                        <CheckBox x:Name="TglNotifications"
+                                  Grid.Column="1"
+                                  Style="{StaticResource Win11ToggleSwitch}"/>
+                    </Grid>
+
+                    <Rectangle Height="1" Fill="{DynamicResource RowDividerBrush}" Margin="16,0"/>
+
+                    <!-- Row 2: Start with Windows -->
+                    <Grid Height="44" Margin="16,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="Start with Windows" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                            <Border Style="{StaticResource InfoBadge}"
+                                    ToolTip="Automatically launch LidGuard minimized in the system tray when you sign in to Windows.">
+                                <TextBlock Text="i" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource BadgeTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                        </StackPanel>
+                        <CheckBox x:Name="TglStartup"
+                                  Grid.Column="1"
+                                  Style="{StaticResource Win11ToggleSwitch}"/>
+                    </Grid>
+
+                    <Rectangle Height="1" Fill="{DynamicResource RowDividerBrush}" Margin="16,0"/>
+
+                    <!-- Row 3: Start Menu Shortcut -->
+                    <Grid Height="44" Margin="16,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="Start Menu Shortcut" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                            <Border Style="{StaticResource InfoBadge}"
+                                    ToolTip="Keep a LidGuard shortcut in the Windows Start Menu Programs list.">
+                                <TextBlock Text="i" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource BadgeTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                        </StackPanel>
+                        <CheckBox x:Name="TglStartMenuShortcut"
+                                  Grid.Column="1"
+                                  Style="{StaticResource Win11ToggleSwitch}"/>
+                    </Grid>
+
+                    <Rectangle Height="1" Fill="{DynamicResource RowDividerBrush}" Margin="16,0"/>
+
+                    <!-- Row 4: Desktop Shortcut -->
+                    <Grid Height="44" Margin="16,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="Desktop Shortcut" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                            <Border Style="{StaticResource InfoBadge}"
+                                    ToolTip="Create or remove a LidGuard shortcut on your Windows Desktop.">
+                                <TextBlock Text="i" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource BadgeTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                        </StackPanel>
+                        <CheckBox x:Name="TglDesktopShortcut"
+                                  Grid.Column="1"
+                                  Style="{StaticResource Win11ToggleSwitch}"/>
+                    </Grid>
+
+                    <Rectangle Height="1" Fill="{DynamicResource RowDividerBrush}" Margin="16,0"/>
+
+                    <!-- Row 5: GitHub Auto-Updates -->
+                    <Grid Height="44" Margin="16,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock x:Name="TxtUpdateLabel" Text="Auto-Check Updates" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                            <Border Style="{StaticResource InfoBadge}"
+                                    ToolTip="Checks GitHub (SStarlight9614/Lid-Guard) for newer versions and installs updates.">
+                                <TextBlock Text="i" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource BadgeTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                        </StackPanel>
+                        <Button x:Name="BtnCheckUpdates"
+                                Grid.Column="1"
+                                Content="Check Now"
+                                Style="{StaticResource Win11Button}"
+                                Height="28"
+                                MinWidth="96"
+                                Margin="0,0,12,0"
+                                VerticalAlignment="Center"
+                                ToolTip="Check SStarlight9614/Lid-Guard on GitHub for updates."/>
+                        <CheckBox x:Name="TglAutoUpdates"
+                                  Grid.Column="2"
+                                  Style="{StaticResource Win11ToggleSwitch}"
+                                  ToolTip="Automatically check SStarlight9614/Lid-Guard on GitHub for updates in the background."/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- 4. Tray Menu Shortcuts Section -->
+            <StackPanel Orientation="Horizontal" Margin="2,0,0,6">
+                <TextBlock Text="Tray Menu Shortcuts" FontSize="13.5" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                <Border Style="{StaticResource InfoBadge}"
+                        ToolTip="By default, right-clicking the tray icon shows only 'Open Settings' and 'Exit'. Toggle on any extra shortcuts you want shown on right-click.">
+                    <TextBlock Text="i" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource BadgeTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
+            </StackPanel>
+
+            <Border Style="{StaticResource FluentCard}" Margin="0,0,0,16">
+                <StackPanel>
+                    <!-- Item 1: Live Status Line -->
+                    <Grid Height="42" Margin="16,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="Live Status Line" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                            <Border Style="{StaticResource InfoBadge}"
+                                    ToolTip="Show current Lid &amp; Power Mode summary line in the right-click tray menu.">
+                                <TextBlock Text="i" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource BadgeTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                        </StackPanel>
+                        <CheckBox x:Name="TglTrayStatus" Grid.Column="1" Style="{StaticResource Win11ToggleSwitch}"/>
+                    </Grid>
+
+                    <Rectangle Height="1" Fill="{DynamicResource RowDividerBrush}" Margin="16,0"/>
+
+                    <!-- Item 2: Lid Auto Toggle -->
+                    <Grid Height="42" Margin="16,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="Lid Auto Toggle" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                            <Border Style="{StaticResource InfoBadge}"
+                                    ToolTip="Show a quick toggle for Auto Lid Close in the right-click tray menu.">
+                                <TextBlock Text="i" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource BadgeTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                        </StackPanel>
+                        <CheckBox x:Name="TglTrayLid" Grid.Column="1" Style="{StaticResource Win11ToggleSwitch}"/>
+                    </Grid>
+
+                    <Rectangle Height="1" Fill="{DynamicResource RowDividerBrush}" Margin="16,0"/>
+
+                    <!-- Item 3: Power Mode Toggle -->
+                    <Grid Height="42" Margin="16,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="Power Mode Toggle" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                            <Border Style="{StaticResource InfoBadge}"
+                                    ToolTip="Show a quick toggle for Auto High Power Mode in the right-click tray menu.">
+                                <TextBlock Text="i" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource BadgeTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                        </StackPanel>
+                        <CheckBox x:Name="TglTrayPower" Grid.Column="1" Style="{StaticResource Win11ToggleSwitch}"/>
+                    </Grid>
+
+                    <Rectangle Height="1" Fill="{DynamicResource RowDividerBrush}" Margin="16,0"/>
+
+                    <!-- Item 4: Refresh Action -->
+                    <Grid Height="42" Margin="16,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="Refresh Displays Action" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                            <Border Style="{StaticResource InfoBadge}"
+                                    ToolTip="Show 'Refresh Displays' action in the right-click tray menu.">
+                                <TextBlock Text="i" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource BadgeTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                        </StackPanel>
+                        <CheckBox x:Name="TglTrayRefresh" Grid.Column="1" Style="{StaticResource Win11ToggleSwitch}"/>
+                    </Grid>
+                </StackPanel>
             </Border>
         </StackPanel>
 
-        <Border Style="{StaticResource FluentCard}" Margin="0,0,0,16">
-            <StackPanel>
-                <!-- Item 1: Live Status Line -->
-                <Grid Height="42" Margin="16,0">
+        <!-- =============================================================== -->
+        <!-- TAB 2: ABOUT PANEL                                              -->
+        <!-- =============================================================== -->
+        <StackPanel x:Name="AboutTabPanel" Visibility="Collapsed">
+
+            <!-- 1. App Identity Card -->
+            <Border Style="{StaticResource FluentCard}" Padding="18,16" Margin="0,0,0,14">
+                <Grid>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="Live Status Line" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
-                        <Border Style="{StaticResource InfoBadge}"
-                                ToolTip="Show current Lid &amp; Power Mode summary line in the right-click tray menu.">
-                            <TextBlock Text="i" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource BadgeTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                    </StackPanel>
-                    <CheckBox x:Name="TglTrayStatus" Grid.Column="1" Style="{StaticResource Win11ToggleSwitch}"/>
-                </Grid>
-
-                <Rectangle Height="1" Fill="{DynamicResource RowDividerBrush}" Margin="16,0"/>
-
-                <!-- Item 2: Lid Auto Toggle -->
-                <Grid Height="42" Margin="16,0">
-                    <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="Lid Auto Toggle" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
-                        <Border Style="{StaticResource InfoBadge}"
-                                ToolTip="Show a quick toggle for Auto Lid Close in the right-click tray menu.">
-                            <TextBlock Text="i" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource BadgeTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
+
+                    <Image x:Name="AboutAppIcon"
+                           Grid.Column="0"
+                           Width="44"
+                           Height="44"
+                           VerticalAlignment="Center"
+                           Margin="0,0,16,0"
+                           RenderOptions.BitmapScalingMode="HighQuality"/>
+
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="LidGuard"
+                                       FontSize="17"
+                                       FontWeight="Bold"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"
+                                       VerticalAlignment="Center"/>
+                            <Border Background="{DynamicResource AccentBrush}"
+                                    CornerRadius="4"
+                                    Padding="7,2"
+                                    Margin="10,0,0,0"
+                                    VerticalAlignment="Center">
+                                <TextBlock x:Name="TxtAboutVersionBadge"
+                                           Text="v0.9 Early Access"
+                                           FontSize="11"
+                                           FontWeight="SemiBold"
+                                           Foreground="#FFFFFF"/>
+                            </Border>
+                        </StackPanel>
+                        <TextBlock Text="Dock-Aware Lid Close &amp; Modern Standby Power Automation"
+                                   FontSize="12.5"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                   Margin="0,4,0,0"
+                                   TextWrapping="Wrap"/>
                     </StackPanel>
-                    <CheckBox x:Name="TglTrayLid" Grid.Column="1" Style="{StaticResource Win11ToggleSwitch}"/>
                 </Grid>
+            </Border>
 
-                <Rectangle Height="1" Fill="{DynamicResource RowDividerBrush}" Margin="16,0"/>
-
-                <!-- Item 3: Power Mode Toggle -->
-                <Grid Height="42" Margin="16,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="Power Mode Toggle" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
-                        <Border Style="{StaticResource InfoBadge}"
-                                ToolTip="Show a quick toggle for Auto High Power Mode in the right-click tray menu.">
-                            <TextBlock Text="i" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource BadgeTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                    </StackPanel>
-                    <CheckBox x:Name="TglTrayPower" Grid.Column="1" Style="{StaticResource Win11ToggleSwitch}"/>
-                </Grid>
-
-                <Rectangle Height="1" Fill="{DynamicResource RowDividerBrush}" Margin="16,0"/>
-
-                <!-- Item 4: Refresh Action -->
-                <Grid Height="42" Margin="16,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="Refresh Displays Action" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
-                        <Border Style="{StaticResource InfoBadge}"
-                                ToolTip="Show 'Refresh Displays' action in the right-click tray menu.">
-                            <TextBlock Text="i" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource BadgeTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                    </StackPanel>
-                    <CheckBox x:Name="TglTrayRefresh" Grid.Column="1" Style="{StaticResource Win11ToggleSwitch}"/>
-                </Grid>
+            <!-- 2. Version & Update Channel Card -->
+            <StackPanel Orientation="Horizontal" Margin="2,0,0,6">
+                <TextBlock Text="Version &amp; Updates" FontSize="13.5" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
             </StackPanel>
-        </Border>
+
+            <Border Style="{StaticResource FluentCard}" Margin="0,0,0,14">
+                <StackPanel>
+                    <!-- Version Number Row -->
+                    <Grid Height="44" Margin="16,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Version Number" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="TxtAboutVersion"
+                                   Grid.Column="1"
+                                   Text="0.9 (Build 0.9.0 — x64)"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextPrimaryBrush}"
+                                   VerticalAlignment="Center"/>
+                    </Grid>
+
+                    <Rectangle Height="1" Fill="{DynamicResource RowDividerBrush}" Margin="16,0"/>
+
+                    <!-- Update Status & Check Button Row -->
+                    <Grid Height="46" Margin="16,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                            <TextBlock Text="Software Updates" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                            <TextBlock x:Name="TxtAboutUpdateStatus"
+                                       Text="Connected to SStarlight9614/Lid-Guard"
+                                       FontSize="11.5"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"/>
+                        </StackPanel>
+                        <Button x:Name="BtnAboutCheckUpdates"
+                                Grid.Column="1"
+                                Content="Check Now"
+                                Style="{StaticResource Win11Button}"
+                                Height="30"
+                                MinWidth="104"
+                                VerticalAlignment="Center"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- 3. Repository & Installation Info Card -->
+            <StackPanel Orientation="Horizontal" Margin="2,0,0,6">
+                <TextBlock Text="Repository &amp; System Info" FontSize="13.5" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+            </StackPanel>
+
+            <Border Style="{StaticResource FluentCard}" Margin="0,0,0,16">
+                <StackPanel>
+                    <!-- GitHub Repository Row -->
+                    <Grid Height="46" Margin="16,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                            <TextBlock Text="GitHub Repository" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                            <TextBlock x:Name="TxtAboutRepo"
+                                       Text="github.com/SStarlight9614/Lid-Guard"
+                                       FontSize="11.5"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"/>
+                        </StackPanel>
+                        <Button x:Name="BtnOpenGitHub"
+                                Grid.Column="1"
+                                Content="Open GitHub"
+                                Style="{StaticResource Win11Button}"
+                                Height="30"
+                                MinWidth="104"
+                                VerticalAlignment="Center"
+                                ToolTip="Open https://github.com/SStarlight9614/Lid-Guard in your browser."/>
+                    </Grid>
+
+                    <Rectangle Height="1" Fill="{DynamicResource RowDividerBrush}" Margin="16,0"/>
+
+                    <!-- Developer Row -->
+                    <Grid Height="42" Margin="16,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Author / Maintainer" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="1" Text="SStarlight9614" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
+                    </Grid>
+
+                    <Rectangle Height="1" Fill="{DynamicResource RowDividerBrush}" Margin="16,0"/>
+
+                    <!-- Architecture Row -->
+                    <Grid Height="42" Margin="16,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Architecture" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="TxtAboutArch" Grid.Column="1" Text="64-bit Native (x64)" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
+                    </Grid>
+
+                    <Rectangle Height="1" Fill="{DynamicResource RowDividerBrush}" Margin="16,0"/>
+
+                    <!-- Install Location Row -->
+                    <Grid Height="46" Margin="16,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Install Location" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                        <TextBlock x:Name="TxtAboutInstallPath"
+                                   Grid.Column="1"
+                                   Text="C:\Program Files\LidGuard"
+                                   FontSize="12"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                   HorizontalAlignment="Right"
+                                   VerticalAlignment="Center"
+                                   TextTrimming="CharacterEllipsis"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+        </StackPanel>
 
         <!-- 5. Footer Buttons -->
         <Grid Margin="0,2,0,0">
@@ -695,16 +899,15 @@
                     Style="{StaticResource Win11Button}"
                     MinWidth="162"
                     Height="34"
-                    ToolTip="Open classic Windows Control Panel Lid Close settings."/>
+                    ToolTip="Open classic Windows Control Panel Power &amp; Lid Options."/>
 
             <Button x:Name="BtnDone"
                     Grid.Column="3"
                     Content="Done"
                     Style="{StaticResource Win11AccentButton}"
-                    MinWidth="98"
+                    MinWidth="104"
                     Height="34"
-                    ToolTip="Minimize LidGuard to the system tray."/>
+                    IsDefault="True"/>
         </Grid>
-
     </StackPanel>
 </Window>

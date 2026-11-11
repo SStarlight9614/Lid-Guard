@@ -20,6 +20,9 @@ using Microsoft.Win32;
 
 using WpfWindow = System.Windows.Window;
 using WpfStyle = System.Windows.Style;
+using WpfVisibility = System.Windows.Visibility;
+using WpfStackPanel = System.Windows.Controls.StackPanel;
+using WpfImage = System.Windows.Controls.Image;
 using WpfCheckBox = System.Windows.Controls.CheckBox;
 using WpfComboBox = System.Windows.Controls.ComboBox;
 using WpfButton = System.Windows.Controls.Button;
@@ -35,8 +38,8 @@ using FormsTimer = System.Windows.Forms.Timer;
 [assembly: AssemblyDescription("Windows 11 Dock-Aware Lid Close & Modern Standby Power Automation")]
 [assembly: AssemblyCompany("SStarlight9614")]
 [assembly: AssemblyProduct("LidGuard")]
-[assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: AssemblyVersion("0.9.0.0")]
+[assembly: AssemblyFileVersion("0.9.0.0")]
 
 namespace LidGuard
 {
@@ -906,9 +909,10 @@ namespace LidGuard
 
     public static class UpdateManager
     {
-        public const string CurrentVersion = "1.0.0";
+        public const string CurrentVersion = "0.9";
         public const string DefaultGitHubRepo = "SStarlight9614/Lid-Guard";
         public const string FallbackGitHubRepo = "SStarlight9614/LidGuard";
+        public const string RepositoryWebUrl = "https://github.com/SStarlight9614/Lid-Guard";
 
         public static void CleanupOldBinary()
         {
@@ -972,6 +976,7 @@ namespace LidGuard
 
             foreach (string repo in reposToTry)
             {
+                // 1. Check GitHub Releases first for manual packaged releases
                 try
                 {
                     string apiUrl = string.Format("https://api.github.com/repos/{0}/releases/latest", repo);
@@ -996,6 +1001,32 @@ namespace LidGuard
                     }
                 }
                 catch { }
+
+                // 2. Check version.json in the main repository branch (https://github.com/SStarlight9614/Lid-Guard)
+                try
+                {
+                    string versionUrl = string.Format("https://raw.githubusercontent.com/{0}/main/version.json", repo);
+                    string vJson = DownloadStringWithUA(versionUrl);
+                    if (!string.IsNullOrEmpty(vJson))
+                    {
+                        string ver = CleanVersion(ExtractJsonString(vJson, "version"));
+                        string dlUrl = ExtractJsonString(vJson, "download_url");
+                        string notes = ExtractJsonString(vJson, "notes");
+
+                        if (!string.IsNullOrEmpty(ver))
+                        {
+                            bool newer = IsVersionNewer(CurrentVersion, ver);
+                            return new UpdateInfo
+                            {
+                                LatestVersion = ver,
+                                DownloadUrl = !string.IsNullOrEmpty(dlUrl) ? dlUrl : "REPO_SOURCE:" + repo,
+                                Notes = notes,
+                                IsNewer = newer
+                            };
+                        }
+                    }
+                }
+                catch { }
             }
 
             return new UpdateInfo { LatestVersion = CurrentVersion, IsNewer = false };
@@ -1004,9 +1035,9 @@ namespace LidGuard
         public static bool DownloadAndApplyUpdate(UpdateInfo info, out string errorMessage)
         {
             errorMessage = null;
-            if (info == null || string.IsNullOrEmpty(info.DownloadUrl))
+            if (info == null)
             {
-                errorMessage = "Invalid update download URL.";
+                errorMessage = "Invalid update metadata.";
                 return false;
             }
 
@@ -1015,18 +1046,62 @@ namespace LidGuard
                 ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
                 string exePath = Application.ExecutablePath;
                 string tempExe = Path.Combine(Path.GetTempPath(), "LidGuard.exe.update");
-
-                using (WebClient wc = new WebClient())
+                if (File.Exists(tempExe))
                 {
-                    wc.Headers.Add("User-Agent", "LidGuard-Updater/" + CurrentVersion);
-                    wc.DownloadFile(info.DownloadUrl, tempExe);
+                    try { File.Delete(tempExe); } catch { }
+                }
+
+                bool acquiredBinary = false;
+
+                // Try downloading prebuilt release binary first if a direct .exe URL is present
+                if (!string.IsNullOrEmpty(info.DownloadUrl) && !info.DownloadUrl.StartsWith("REPO_SOURCE:", StringComparison.OrdinalIgnoreCase))
+                {
+                    try
+                    {
+                        using (WebClient wc = new WebClient())
+                        {
+                            wc.Headers.Add("User-Agent", "LidGuard-Updater/" + CurrentVersion);
+                            wc.DownloadFile(info.DownloadUrl, tempExe);
+                        }
+
+                        FileInfo fiCheck = new FileInfo(tempExe);
+                        if (fiCheck.Exists && fiCheck.Length > 8192)
+                        {
+                            acquiredBinary = true;
+                        }
+                    }
+                    catch { }
+                }
+
+                // Fallback: Download latest source files from SStarlight9614/Lid-Guard and compile 64-bit LidGuard.exe
+                if (!acquiredBinary)
+                {
+                    string repo = GetConfiguredRepo();
+                    string buildDir = Path.Combine(Path.GetTempPath(), "LidGuardUpdate_" + Guid.NewGuid().ToString("N").Substring(0, 8));
+                    Directory.CreateDirectory(buildDir);
+
+                    string rawBase = string.Format("https://raw.githubusercontent.com/{0}/main/", repo);
+                    string csPath = Path.Combine(buildDir, "LidGuard.cs");
+                    string xamlPath = Path.Combine(buildDir, "LidGuardWindow.xaml");
+                    string icoPath = Path.Combine(buildDir, "LidGuard.ico");
+
+                    using (WebClient wc = new WebClient())
+                    {
+                        wc.Headers.Add("User-Agent", "LidGuard-Updater/" + CurrentVersion);
+                        wc.Headers.Add("Cache-Control", "no-cache");
+                        wc.DownloadFile(rawBase + "LidGuard.cs", csPath);
+                        wc.DownloadFile(rawBase + "LidGuardWindow.xaml", xamlPath);
+                        wc.DownloadFile(rawBase + "LidGuard.ico", icoPath);
+                    }
+
+                    CompileUpdatedBinary(buildDir, csPath, xamlPath, icoPath, tempExe);
                 }
 
                 FileInfo fi = new FileInfo(tempExe);
                 if (!fi.Exists || fi.Length < 8192)
                 {
                     if (fi.Exists) fi.Delete();
-                    errorMessage = "Downloaded executable was incomplete or invalid.";
+                    errorMessage = "Downloaded or built executable was incomplete or invalid.";
                     return false;
                 }
 
@@ -1038,24 +1113,97 @@ namespace LidGuard
                 if (header[0] != (byte)'M' || header[1] != (byte)'Z')
                 {
                     File.Delete(tempExe);
-                    errorMessage = "Downloaded file is not a valid Windows executable.";
+                    errorMessage = "Update file is not a valid Windows executable.";
                     return false;
                 }
 
-                string exeDir = Path.GetDirectoryName(exePath);
-                string oldExe = Path.Combine(exeDir, "LidGuard.old.exe");
-                if (File.Exists(oldExe))
+                try
                 {
-                    try { File.Delete(oldExe); } catch { }
+                    ReplaceTargetExecutable(tempExe, exePath);
+                    return true;
                 }
-                File.Move(exePath, oldExe);
-                File.Move(tempExe, exePath);
-                return true;
+                catch (UnauthorizedAccessException)
+                {
+                    // Installed in C:\Program Files\LidGuard — elevate helper to replace binary
+                    string args = string.Format("--elevated-apply-update \"{0}\" \"{1}\"", tempExe, exePath);
+                    ProcessStartInfo psi = new ProcessStartInfo(tempExe, args)
+                    {
+                        Verb = "runas",
+                        UseShellExecute = true,
+                        WindowStyle = ProcessWindowStyle.Hidden
+                    };
+                    using (Process p = Process.Start(psi))
+                    {
+                        p.WaitForExit();
+                        if (p.ExitCode == 0)
+                            return true;
+                    }
+                    errorMessage = "Administrator permission is required to update LidGuard in Program Files.";
+                    return false;
+                }
             }
             catch (Exception ex)
             {
                 errorMessage = ex.Message;
                 return false;
+            }
+        }
+
+        public static void ReplaceTargetExecutable(string sourceTempExe, string targetExePath)
+        {
+            string exeDir = Path.GetDirectoryName(targetExePath);
+            string oldExe = Path.Combine(exeDir, "LidGuard.old.exe");
+            if (File.Exists(oldExe))
+            {
+                try { File.Delete(oldExe); } catch { }
+            }
+            if (File.Exists(targetExePath))
+            {
+                File.Move(targetExePath, oldExe);
+            }
+            File.Copy(sourceTempExe, targetExePath, true);
+        }
+
+        private static void CompileUpdatedBinary(string workDir, string csPath, string xamlPath, string icoPath, string outExePath)
+        {
+            string fwDir = Environment.Is64BitProcess
+                ? @"C:\Windows\Microsoft.NET\Framework64\v4.0.30319"
+                : @"C:\Windows\Microsoft.NET\Framework\v4.0.30319";
+            string cscPath = Path.Combine(fwDir, "csc.exe");
+            string wpfDir = Path.Combine(fwDir, "WPF");
+            string platformFlag = Environment.Is64BitProcess ? "x64" : "x86";
+
+            string args = string.Format(
+                "/nologo /target:winexe /platform:{0} /optimize+ \"/out:{1}\" \"/win32icon:{2}\" " +
+                "\"/resource:{3},LidGuardWindow.xaml\" \"/resource:{2},LidGuard.ico\" " +
+                "/r:System.dll /r:System.Core.dll /r:System.Drawing.dll /r:System.Windows.Forms.dll /r:System.Xaml.dll " +
+                "\"/r:{4}\" \"/r:{5}\" \"/r:{6}\" \"{7}\"",
+                platformFlag,
+                outExePath,
+                icoPath,
+                xamlPath,
+                Path.Combine(wpfDir, "PresentationFramework.dll"),
+                Path.Combine(wpfDir, "PresentationCore.dll"),
+                Path.Combine(wpfDir, "WindowsBase.dll"),
+                csPath);
+
+            ProcessStartInfo psi = new ProcessStartInfo(cscPath, args)
+            {
+                WorkingDirectory = workDir,
+                CreateNoWindow = true,
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
+            };
+
+            using (Process p = Process.Start(psi))
+            {
+                string output = p.StandardOutput.ReadToEnd() + "\n" + p.StandardError.ReadToEnd();
+                p.WaitForExit(20000);
+                if (p.ExitCode != 0 || !File.Exists(outExePath))
+                {
+                    throw new Exception("Compiler error: " + output.Trim());
+                }
             }
         }
 
@@ -1344,6 +1492,11 @@ namespace LidGuard
         public bool IsClosed { get; private set; }
 
         private WpfTextBlock _txtVersionTag;
+        private WpfButton _btnTabSettings;
+        private WpfButton _btnTabAbout;
+        private WpfStackPanel _settingsTabPanel;
+        private WpfStackPanel _aboutTabPanel;
+
         private WpfEllipse _statusDot;
         private WpfTextBlock _txtStatusHeadline;
         private WpfTextBlock _txtStatusSub;
@@ -1361,6 +1514,16 @@ namespace LidGuard
         private WpfCheckBox _tglTrayLid;
         private WpfCheckBox _tglTrayPower;
         private WpfCheckBox _tglTrayRefresh;
+
+        private WpfImage _aboutAppIcon;
+        private WpfTextBlock _txtAboutVersionBadge;
+        private WpfTextBlock _txtAboutVersion;
+        private WpfTextBlock _txtAboutUpdateStatus;
+        private WpfButton _btnAboutCheckUpdates;
+        private WpfTextBlock _txtAboutRepo;
+        private WpfButton _btnOpenGitHub;
+        private WpfTextBlock _txtAboutArch;
+        private WpfTextBlock _txtAboutInstallPath;
 
         private WpfButton _btnRefresh;
         private WpfButton _btnWinPower;
@@ -1382,15 +1545,12 @@ namespace LidGuard
             bool isDark = ThemeManager.IsSystemDarkTheme();
             ThemeManager.UpdateResourceBrushes(_window, isDark, false);
 
-            SetStaticWindowIcons();
-
-            _window.SourceInitialized += (s, e) =>
-            {
-                bool darkNow = ThemeManager.IsSystemDarkTheme();
-                ThemeManager.ApplyMicaAndThemeToWindow(_window, darkNow);
-            };
-
             _txtVersionTag = (WpfTextBlock)_window.FindName("TxtVersionTag");
+            _btnTabSettings = (WpfButton)_window.FindName("BtnTabSettings");
+            _btnTabAbout = (WpfButton)_window.FindName("BtnTabAbout");
+            _settingsTabPanel = (WpfStackPanel)_window.FindName("SettingsTabPanel");
+            _aboutTabPanel = (WpfStackPanel)_window.FindName("AboutTabPanel");
+
             _statusDot = (WpfEllipse)_window.FindName("StatusDot");
             _txtStatusHeadline = (WpfTextBlock)_window.FindName("TxtStatusHeadline");
             _txtStatusSub = (WpfTextBlock)_window.FindName("TxtStatusSub");
@@ -1409,11 +1569,73 @@ namespace LidGuard
             _tglTrayPower = (WpfCheckBox)_window.FindName("TglTrayPower");
             _tglTrayRefresh = (WpfCheckBox)_window.FindName("TglTrayRefresh");
 
+            _aboutAppIcon = (WpfImage)_window.FindName("AboutAppIcon");
+            _txtAboutVersionBadge = (WpfTextBlock)_window.FindName("TxtAboutVersionBadge");
+            _txtAboutVersion = (WpfTextBlock)_window.FindName("TxtAboutVersion");
+            _txtAboutUpdateStatus = (WpfTextBlock)_window.FindName("TxtAboutUpdateStatus");
+            _btnAboutCheckUpdates = (WpfButton)_window.FindName("BtnAboutCheckUpdates");
+            _txtAboutRepo = (WpfTextBlock)_window.FindName("TxtAboutRepo");
+            _btnOpenGitHub = (WpfButton)_window.FindName("BtnOpenGitHub");
+            _txtAboutArch = (WpfTextBlock)_window.FindName("TxtAboutArch");
+            _txtAboutInstallPath = (WpfTextBlock)_window.FindName("TxtAboutInstallPath");
+
             _btnRefresh = (WpfButton)_window.FindName("BtnRefresh");
             _btnWinPower = (WpfButton)_window.FindName("BtnWinPower");
             _btnDone = (WpfButton)_window.FindName("BtnDone");
 
+            SetStaticWindowIcons();
+
+            _window.SourceInitialized += (s, e) =>
+            {
+                bool darkNow = ThemeManager.IsSystemDarkTheme();
+                ThemeManager.ApplyMicaAndThemeToWindow(_window, darkNow);
+            };
+
             if (_txtVersionTag != null) _txtVersionTag.Text = "v" + UpdateManager.CurrentVersion;
+            if (_txtAboutVersionBadge != null) _txtAboutVersionBadge.Text = "v" + UpdateManager.CurrentVersion + " Early Access";
+            if (_txtAboutVersion != null)
+            {
+                string archTag = Environment.Is64BitProcess ? "x64" : "x86";
+                _txtAboutVersion.Text = string.Format("{0} (Build {0}.0 — {1})", UpdateManager.CurrentVersion, archTag);
+            }
+            if (_txtAboutArch != null)
+            {
+                _txtAboutArch.Text = Environment.Is64BitProcess ? "64-bit Native (x64)" : "32-bit (x86)";
+            }
+            if (_txtAboutInstallPath != null)
+            {
+                string dir = Path.GetDirectoryName(Application.ExecutablePath);
+                _txtAboutInstallPath.Text = dir;
+                _txtAboutInstallPath.ToolTip = Application.ExecutablePath;
+            }
+            if (_txtAboutRepo != null)
+            {
+                _txtAboutRepo.Text = "github.com/" + UpdateManager.GetConfiguredRepo();
+            }
+
+            if (_btnTabSettings != null && _btnTabAbout != null)
+            {
+                _btnTabSettings.Click += (s, e) => SwitchTab(false);
+                _btnTabAbout.Click += (s, e) => SwitchTab(true);
+            }
+
+            if (_btnAboutCheckUpdates != null)
+            {
+                _btnAboutCheckUpdates.Click += (s, e) => _ctx.TriggerUpdateCheck(true);
+            }
+
+            if (_btnOpenGitHub != null)
+            {
+                _btnOpenGitHub.Click += (s, e) =>
+                {
+                    try
+                    {
+                        string repoUrl = "https://github.com/" + UpdateManager.GetConfiguredRepo();
+                        Process.Start(new ProcessStartInfo(repoUrl) { UseShellExecute = true });
+                    }
+                    catch { }
+                };
+            }
 
             _cmbLidBehavior.SelectionChanged += (s, e) =>
             {
@@ -1506,6 +1728,26 @@ namespace LidGuard
             RefreshFromContext();
         }
 
+        private void SwitchTab(bool showAbout)
+        {
+            if (_settingsTabPanel != null && _aboutTabPanel != null)
+            {
+                _settingsTabPanel.Visibility = showAbout ? WpfVisibility.Collapsed : WpfVisibility.Visible;
+                _aboutTabPanel.Visibility = showAbout ? WpfVisibility.Visible : WpfVisibility.Collapsed;
+            }
+
+            if (_btnTabSettings != null && _btnTabAbout != null)
+            {
+                WpfStyle activeStyle = (WpfStyle)_window.FindResource("Win11AccentButton");
+                WpfStyle inactiveStyle = (WpfStyle)_window.FindResource("Win11Button");
+                if (activeStyle != null && inactiveStyle != null)
+                {
+                    _btnTabSettings.Style = showAbout ? inactiveStyle : activeStyle;
+                    _btnTabAbout.Style = showAbout ? activeStyle : inactiveStyle;
+                }
+            }
+        }
+
         private void SetStaticWindowIcons()
         {
             try
@@ -1518,6 +1760,10 @@ namespace LidGuard
                         if (decoder.Frames.Count > 0)
                         {
                             _window.Icon = decoder.Frames[0];
+                            if (_aboutAppIcon != null)
+                            {
+                                _aboutAppIcon.Source = decoder.Frames[0];
+                            }
                             return;
                         }
                     }
@@ -1535,6 +1781,10 @@ namespace LidGuard
                         System.Windows.Int32Rect.Empty,
                         BitmapSizeOptions.FromEmptyOptions());
                     _window.Icon = imgSrc;
+                    if (_aboutAppIcon != null)
+                    {
+                        _aboutAppIcon.Source = imgSrc;
+                    }
                 }
             }
             catch { }
@@ -1634,15 +1884,42 @@ namespace LidGuard
                 {
                     _tglAutoUpdates.IsChecked = _ctx.AutoCheckUpdates;
                 }
+                bool hasUpdate = (_ctx.AvailableUpdate != null && _ctx.AvailableUpdate.IsNewer);
+                WpfStyle btnStyle = (WpfStyle)_window.FindResource(hasUpdate ? "Win11AccentButton" : "Win11Button");
+
                 if (_btnCheckUpdates != null)
                 {
                     _btnCheckUpdates.Content = _ctx.UpdateStatusText ?? "Check Now";
                     _btnCheckUpdates.IsEnabled = !_ctx.IsCheckingUpdate;
-                    bool hasUpdate = (_ctx.AvailableUpdate != null && _ctx.AvailableUpdate.IsNewer);
-                    WpfStyle btnStyle = (WpfStyle)_window.FindResource(hasUpdate ? "Win11AccentButton" : "Win11Button");
                     if (btnStyle != null)
                     {
                         _btnCheckUpdates.Style = btnStyle;
+                    }
+                }
+
+                if (_btnAboutCheckUpdates != null)
+                {
+                    _btnAboutCheckUpdates.Content = _ctx.UpdateStatusText ?? "Check Now";
+                    _btnAboutCheckUpdates.IsEnabled = !_ctx.IsCheckingUpdate;
+                    if (btnStyle != null)
+                    {
+                        _btnAboutCheckUpdates.Style = btnStyle;
+                    }
+                }
+
+                if (_txtAboutUpdateStatus != null)
+                {
+                    if (_ctx.IsCheckingUpdate)
+                    {
+                        _txtAboutUpdateStatus.Text = "Checking " + UpdateManager.GetConfiguredRepo() + "...";
+                    }
+                    else if (hasUpdate)
+                    {
+                        _txtAboutUpdateStatus.Text = "Update available: v" + _ctx.AvailableUpdate.LatestVersion + " on GitHub";
+                    }
+                    else
+                    {
+                        _txtAboutUpdateStatus.Text = "Up to date (v" + UpdateManager.CurrentVersion + ") • " + UpdateManager.GetConfiguredRepo();
                     }
                 }
 
@@ -2122,6 +2399,34 @@ namespace LidGuard
                 {
                     UpdateManager.SetConfiguredRepo(args[1]);
                     Console.WriteLine("Updated GitHub repository to: " + UpdateManager.GetConfiguredRepo());
+                    return;
+                }
+                if (args[0] == "--elevated-apply-update" && args.Length >= 3)
+                {
+                    try
+                    {
+                        UpdateManager.ReplaceTargetExecutable(args[1], args[2]);
+                        Environment.ExitCode = 0;
+                    }
+                    catch
+                    {
+                        Environment.ExitCode = 1;
+                    }
+                    return;
+                }
+                if (args[0] == "--uninstall")
+                {
+                    try
+                    {
+                        ShortcutManager.SetStartMenuShortcut(false, Application.ExecutablePath);
+                        ShortcutManager.SetDesktopShortcut(false, Application.ExecutablePath);
+                        using (RegistryKey runKey = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Run", true))
+                        {
+                            if (runKey != null) runKey.DeleteValue("LidGuard", false);
+                        }
+                        Registry.CurrentUser.DeleteSubKeyTree(@"Software\Microsoft\Windows\CurrentVersion\Uninstall\LidGuard", false);
+                    }
+                    catch { }
                     return;
                 }
                 if (args[0] == "--minimized")

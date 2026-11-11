@@ -1,5 +1,7 @@
 {
-  "version": "1.0.0",
+  "version": "0.9",
   "repo": "SStarlight9614/Lid-Guard",
-  "notes": "LidGuard v1.0.0 — Single-file Windows 11 Mica app & built-in installer with dock-aware Lid Close automation and Modern Standby Power Mode switching."
+  "repository_url": "https://github.com/SStarlight9614/Lid-Guard",
+  "download_url": "https://github.com/SStarlight9614/Lid-Guard/releases/latest/download/LidGuard.exe",
+  "notes": "LidGuard v0.9 — Added About tab, repository integration with SStarlight9614/Lid-Guard, and standalone Program Files installer."
 }

@@ -444,8 +444,9 @@ namespace LidGuardInstaller
                     if (key != null)
                     {
                         key.SetValue("DisplayName", "LidGuard");
-                        key.SetValue("DisplayVersion", "1.0.0");
+                        key.SetValue("DisplayVersion", "0.9");
                         key.SetValue("Publisher", "SStarlight9614");
+                        key.SetValue("URLInfoAbout", "https://github.com/SStarlight9614/Lid-Guard");
                         key.SetValue("DisplayIcon", installedExePath);
                         key.SetValue("InstallLocation", installDir);
                         key.SetValue("UninstallString", "\"" + installedExePath + "\" --uninstall");
@@ -670,7 +671,7 @@ namespace LidGuardInstaller
                 <ColumnDefinition Width=""Auto""/>
                 <ColumnDefinition Width=""Auto""/>
             </Grid.ColumnDefinitions>
-            <TextBlock x:Name=""LblStatus"" Grid.Column=""0"" Text=""Ready to install from GitHub"" FontSize=""12"" Foreground=""{DynamicResource TextSecondaryBrush}"" VerticalAlignment=""Center"" TextTrimming=""CharacterEllipsis"" Margin=""2,0,10,0""/>
+            <TextBlock x:Name=""LblStatus"" Grid.Column=""0"" Text=""Source: github.com/SStarlight9614/Lid-Guard"" FontSize=""12"" Foreground=""{DynamicResource TextSecondaryBrush}"" VerticalAlignment=""Center"" TextTrimming=""CharacterEllipsis"" Margin=""2,0,10,0""/>
             <Button x:Name=""BtnCancel"" Grid.Column=""1"" Content=""Cancel"" Style=""{StaticResource SecondaryButton}"" Margin=""0,0,8,0""/>
             <Button x:Name=""BtnContinue"" Grid.Column=""2"" Content=""Continue"" Style=""{StaticResource PrimaryButton}""/>
         </Grid>
@@ -855,6 +856,21 @@ namespace LidGuardInstaller
         [STAThread]
         private static int Main(string[] args)
         {
+            if (args != null && args.Length >= 1 && string.Equals(args[0], "--test-fetch", StringComparison.OrdinalIgnoreCase))
+            {
+                try
+                {
+                    string exe = SetupEngine.AcquireOrBuildLidGuardExe(msg => Console.WriteLine(msg));
+                    Console.WriteLine("SUCCESS: StagedExe=" + exe + "; TargetDir=" + SetupEngine.GetArchitectureInstallDirectory());
+                    return 0;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("ERROR: " + ex.Message);
+                    return 1;
+                }
+            }
+
             if (args != null && args.Length >= 3 && string.Equals(args[0], "--elevated-copy", StringComparison.OrdinalIgnoreCase))
             {
                 try
