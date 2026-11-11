@@ -1,0 +1,710 @@
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="LidGuard Settings"
+        Width="480"
+        SizeToContent="Height"
+        ResizeMode="CanMinimize"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource WindowFallbackBrush}"
+        FontFamily="Segoe UI Variable Text, Segoe UI"
+        FontSize="13.5"
+        TextOptions.TextFormattingMode="Display"
+        TextOptions.TextRenderingMode="ClearType"
+        RenderOptions.ClearTypeHint="Enabled"
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="True">
+
+    <Window.Resources>
+        <!-- Default Theme Brushes (Dynamically switched by ThemeManager between Dark & Light) -->
+        <SolidColorBrush x:Key="WindowFallbackBrush" Color="#00000000"/>
+        <SolidColorBrush x:Key="CardBgBrush" Color="#2B2B2B"/>
+        <SolidColorBrush x:Key="CardBorderBrush" Color="#3A3A3A"/>
+        <SolidColorBrush x:Key="RowDividerBrush" Color="#363636"/>
+        <SolidColorBrush x:Key="TextPrimaryBrush" Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="TextSecondaryBrush" Color="#C5C5C5"/>
+        <SolidColorBrush x:Key="AccentBrush" Color="#0067C0"/>
+        <SolidColorBrush x:Key="AccentHoverBrush" Color="#1A75C8"/>
+        <SolidColorBrush x:Key="AccentPressedBrush" Color="#005BA8"/>
+        <SolidColorBrush x:Key="OnAccentBrush" Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="ControlFillBrush" Color="#353535"/>
+        <SolidColorBrush x:Key="ControlFillHoverBrush" Color="#3F3F3F"/>
+        <SolidColorBrush x:Key="ControlFillPressedBrush" Color="#2F2F2F"/>
+        <SolidColorBrush x:Key="ControlBorderBrush" Color="#4A4A4A"/>
+        <SolidColorBrush x:Key="SwitchTrackOffBrush" Color="#2B2B2B"/>
+        <SolidColorBrush x:Key="SwitchBorderOffBrush" Color="#9E9E9E"/>
+        <SolidColorBrush x:Key="SwitchThumbOffBrush" Color="#CECECE"/>
+        <SolidColorBrush x:Key="BadgeBorderBrush" Color="#8A8A8A"/>
+        <SolidColorBrush x:Key="BadgeTextBrush" Color="#B8B8B8"/>
+        <SolidColorBrush x:Key="BadgeHoverBgBrush" Color="#383838"/>
+        <SolidColorBrush x:Key="PopupBgBrush" Color="#2B2B2B"/>
+        <SolidColorBrush x:Key="PopupBorderBrush" Color="#454545"/>
+
+        <!-- Crisp Windows 11 ToolTip Style (No DropShadow, ClearType Enabled) -->
+        <Style TargetType="ToolTip">
+            <Setter Property="Background" Value="{DynamicResource PopupBgBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource PopupBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="11,8"/>
+            <Setter Property="FontSize" Value="12.5"/>
+            <Setter Property="MaxWidth" Value="320"/>
+            <Setter Property="HasDropShadow" Value="False"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToolTip">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6"
+                                Padding="{TemplateBinding Padding}"
+                                RenderOptions.ClearTypeHint="Enabled"
+                                TextOptions.TextFormattingMode="Display"
+                                TextOptions.TextRenderingMode="ClearType">
+                            <ContentPresenter>
+                                <ContentPresenter.Resources>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="TextWrapping" Value="Wrap"/>
+                                        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+                                    </Style>
+                                </ContentPresenter.Resources>
+                            </ContentPresenter>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Windows 11 Solid Fluent Card Style (#2B2B2B Dark / #FBFBFB Light, ClearType Enabled) -->
+        <Style x:Key="FluentCard" TargetType="Border">
+            <Setter Property="Background" Value="{DynamicResource CardBgBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource CardBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="RenderOptions.ClearTypeHint" Value="Enabled"/>
+        </Style>
+
+        <!-- Hover Info Badge (i) Style -->
+        <Style x:Key="InfoBadge" TargetType="Border">
+            <Setter Property="Width" Value="18"/>
+            <Setter Property="Height" Value="18"/>
+            <Setter Property="CornerRadius" Value="9"/>
+            <Setter Property="BorderThickness" Value="1.3"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BadgeBorderBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource CardBgBrush}"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="8,0,0,0"/>
+            <Setter Property="Cursor" Value="Help"/>
+            <Setter Property="RenderOptions.ClearTypeHint" Value="Enabled"/>
+            <Setter Property="ToolTipService.InitialShowDelay" Value="100"/>
+            <Setter Property="ToolTipService.ShowDuration" Value="12000"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                    <Setter Property="Background" Value="{DynamicResource BadgeHoverBgBrush}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Windows 11 Pill ToggleSwitch (Accent Track + White Knob when On) -->
+        <Style x:Key="Win11ToggleSwitch" TargetType="CheckBox">
+            <Setter Property="Width" Value="44"/>
+            <Setter Property="Height" Value="22"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="ToolTipService.InitialShowDelay" Value="150"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="CheckBox">
+                        <Grid Width="44" Height="22" Background="Transparent">
+                            <Border x:Name="Track"
+                                    CornerRadius="11"
+                                    Background="{DynamicResource SwitchTrackOffBrush}"
+                                    BorderBrush="{DynamicResource SwitchBorderOffBrush}"
+                                    BorderThickness="1.3"/>
+                            <Ellipse x:Name="Thumb"
+                                     Width="12"
+                                     Height="12"
+                                     Fill="{DynamicResource SwitchThumbOffBrush}"
+                                     HorizontalAlignment="Left"
+                                     VerticalAlignment="Center"
+                                     Margin="5,0,0,0"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Track" Property="Background" Value="{DynamicResource ControlFillHoverBrush}"/>
+                                <Setter TargetName="Thumb" Property="Width" Value="13"/>
+                                <Setter TargetName="Thumb" Property="Height" Value="13"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Track" Property="Background" Value="{DynamicResource AccentBrush}"/>
+                                <Setter TargetName="Track" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                                <Setter TargetName="Thumb" Property="Fill" Value="#FFFFFF"/>
+                                <Setter TargetName="Thumb" Property="HorizontalAlignment" Value="Right"/>
+                                <Setter TargetName="Thumb" Property="Margin" Value="0,0,5,0"/>
+                            </Trigger>
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="IsChecked" Value="True"/>
+                                    <Condition Property="IsMouseOver" Value="True"/>
+                                </MultiTrigger.Conditions>
+                                <Setter TargetName="Track" Property="Background" Value="{DynamicResource AccentHoverBrush}"/>
+                                <Setter TargetName="Track" Property="BorderBrush" Value="{DynamicResource AccentHoverBrush}"/>
+                            </MultiTrigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Windows 11 Fluent ComboBox Item Style -->
+        <Style TargetType="ComboBoxItem">
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource PopupBgBrush}"/>
+            <Setter Property="Padding" Value="10,7"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="RenderOptions.ClearTypeHint" Value="Enabled"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBoxItem">
+                        <Border x:Name="ItemBorder"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="5"
+                                Margin="4,2"
+                                Padding="{TemplateBinding Padding}"
+                                RenderOptions.ClearTypeHint="Enabled">
+                            <ContentPresenter VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsHighlighted" Value="True">
+                                <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource ControlFillHoverBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource ControlFillHoverBrush}"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Windows 11 Fluent ComboBox Style -->
+        <Style x:Key="Win11ComboBox" TargetType="ComboBox">
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource ControlFillBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource ControlBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="RenderOptions.ClearTypeHint" Value="Enabled"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid RenderOptions.ClearTypeHint="Enabled">
+                            <ToggleButton x:Name="ToggleButton"
+                                          Focusable="False"
+                                          IsChecked="{Binding Path=IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                          ClickMode="Press">
+                                <ToggleButton.Template>
+                                    <ControlTemplate TargetType="ToggleButton">
+                                        <Border x:Name="Border"
+                                                Background="{DynamicResource ControlFillBrush}"
+                                                BorderBrush="{DynamicResource ControlBorderBrush}"
+                                                BorderThickness="1"
+                                                CornerRadius="6"
+                                                RenderOptions.ClearTypeHint="Enabled">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="28"/>
+                                                </Grid.ColumnDefinitions>
+                                                <Path Grid.Column="1"
+                                                      HorizontalAlignment="Center"
+                                                      VerticalAlignment="Center"
+                                                      Data="M 0,0 L 4.5,4.5 L 9,0"
+                                                      Stroke="{DynamicResource TextSecondaryBrush}"
+                                                      StrokeThickness="1.4"/>
+                                            </Grid>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="Border" Property="Background" Value="{DynamicResource ControlFillHoverBrush}"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </ToggleButton.Template>
+                            </ToggleButton>
+
+                            <ContentPresenter x:Name="ContentSite"
+                                              IsHitTestVisible="False"
+                                              Content="{TemplateBinding SelectionBoxItem}"
+                                              ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                              ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
+                                              Margin="11,0,28,0"
+                                              VerticalAlignment="Center"
+                                              HorizontalAlignment="Left"/>
+
+                            <Popup x:Name="Popup"
+                                   Placement="Bottom"
+                                   IsOpen="{TemplateBinding IsDropDownOpen}"
+                                   AllowsTransparency="False"
+                                   Focusable="False"
+                                   PopupAnimation="None">
+                                <Grid MinWidth="{TemplateBinding ActualWidth}" MaxHeight="240">
+                                    <Border Background="{DynamicResource PopupBgBrush}"
+                                            BorderBrush="{DynamicResource PopupBorderBrush}"
+                                            BorderThickness="1"
+                                            Padding="2,4"
+                                            RenderOptions.ClearTypeHint="Enabled"
+                                            TextOptions.TextFormattingMode="Display"
+                                            TextOptions.TextRenderingMode="ClearType">
+                                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                            <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained"/>
+                                        </ScrollViewer>
+                                    </Border>
+                                </Grid>
+                            </Popup>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Windows 11 Secondary Button Style -->
+        <Style x:Key="Win11Button" TargetType="Button">
+            <Setter Property="Background" Value="{DynamicResource ControlFillBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource ControlBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="14,0"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="RenderOptions.ClearTypeHint" Value="Enabled"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="BtnBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6"
+                                Padding="{TemplateBinding Padding}"
+                                RenderOptions.ClearTypeHint="Enabled">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="BtnBorder" Property="Background" Value="{DynamicResource ControlFillHoverBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="BtnBorder" Property="Background" Value="{DynamicResource ControlFillPressedBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.55"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Windows 11 System Accent Primary Button Style (White Text) -->
+        <Style x:Key="Win11AccentButton" TargetType="Button" BasedOn="{StaticResource Win11Button}">
+            <Setter Property="Background" Value="{DynamicResource AccentBrush}"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="RenderOptions.ClearTypeHint" Value="Enabled"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="BtnBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6"
+                                Padding="{TemplateBinding Padding}"
+                                RenderOptions.ClearTypeHint="Enabled">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="BtnBorder" Property="Background" Value="{DynamicResource AccentHoverBrush}"/>
+                                <Setter TargetName="BtnBorder" Property="BorderBrush" Value="{DynamicResource AccentHoverBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="BtnBorder" Property="Background" Value="{DynamicResource AccentPressedBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <!-- Main Content Container -->
+    <StackPanel Margin="22,16,22,22">
+
+        <!-- Page Header + Version Pill -->
+        <Grid Margin="2,0,2,12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0"
+                       Text="LidGuard"
+                       FontSize="22"
+                       FontWeight="Bold"
+                       Foreground="{DynamicResource TextPrimaryBrush}"
+                       VerticalAlignment="Center"/>
+            <TextBlock x:Name="TxtVersionTag"
+                       Grid.Column="1"
+                       Text="v1.0.0"
+                       FontSize="12"
+                       Foreground="{DynamicResource TextSecondaryBrush}"
+                       VerticalAlignment="Bottom"
+                       Margin="0,0,2,3"/>
+        </Grid>
+
+        <!-- 1. Live Status Fluent Card -->
+        <Border Style="{StaticResource FluentCard}" Padding="16,13" Margin="0,0,0,14">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <Ellipse x:Name="StatusDot"
+                         Grid.Column="0"
+                         Width="12"
+                         Height="12"
+                         Fill="#0067C0"
+                         VerticalAlignment="Center"
+                         Margin="2,0,14,0"/>
+
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <TextBlock x:Name="TxtStatusHeadline"
+                               Text="Lid Close: Sleep  •  Balanced"
+                               FontSize="14"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextPrimaryBrush}"
+                               TextTrimming="CharacterEllipsis"/>
+                    <TextBlock x:Name="TxtStatusSub"
+                               Text="Internal Screen Only  •  Plugged In"
+                               FontSize="12"
+                               Foreground="{DynamicResource TextSecondaryBrush}"
+                               Margin="0,2,0,0"
+                               TextTrimming="CharacterEllipsis"/>
+                </StackPanel>
+
+                <Border Grid.Column="2"
+                        Style="{StaticResource InfoBadge}"
+                        ToolTip="Live hardware state detected via Windows QueryDisplayConfig and Modern Standby Power Overlay APIs.">
+                    <TextBlock Text="i" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource BadgeTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
+            </Grid>
+        </Border>
+
+        <!-- 2. Automation Section -->
+        <StackPanel Orientation="Horizontal" Margin="2,0,0,6">
+            <TextBlock Text="Automation" FontSize="13.5" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+            <Border Style="{StaticResource InfoBadge}"
+                    ToolTip="Automatically adjusts your plugged-in lid behavior and Windows power mode when an external display or dock is connected.">
+                <TextBlock Text="i" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource BadgeTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+        </StackPanel>
+
+        <Border Style="{StaticResource FluentCard}" Margin="0,0,0,14">
+            <StackPanel>
+                <!-- Row 1: Lid Close Action -->
+                <Grid Height="46" Margin="16,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="Lid Close Action" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                        <Border Style="{StaticResource InfoBadge}"
+                                ToolTip="Auto sets Plugged-In Lid Close to 'Do Nothing' when projecting to an external display, and reverts to 'Sleep' when undocked.">
+                            <TextBlock Text="i" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource BadgeTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </StackPanel>
+                    <ComboBox x:Name="CmbLidBehavior"
+                              Grid.Column="1"
+                              Width="182"
+                              Style="{StaticResource Win11ComboBox}"
+                              ToolTip="Choose how LidGuard manages your plugged-in lid close setting.">
+                        <ComboBoxItem Content="Auto (Dock Aware)"/>
+                        <ComboBoxItem Content="Always Do Nothing"/>
+                        <ComboBoxItem Content="Always Sleep"/>
+                    </ComboBox>
+                </Grid>
+
+                <Rectangle Height="1" Fill="{DynamicResource RowDividerBrush}" Margin="16,0"/>
+
+                <!-- Row 2: Auto High Power Mode -->
+                <Grid Height="46" Margin="16,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="Auto High Power Mode" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                        <Border Style="{StaticResource InfoBadge}"
+                                ToolTip="Automatically switches Windows Modern Standby Power Mode to 'Best Performance' when docked &amp; plugged in, and reverts to 'Balanced' when undocked.">
+                            <TextBlock Text="i" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource BadgeTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </StackPanel>
+                    <CheckBox x:Name="TglAutoPower"
+                              Grid.Column="1"
+                              Style="{StaticResource Win11ToggleSwitch}"
+                              ToolTip="Toggle automatic switching between Best Performance and Balanced power modes."/>
+                </Grid>
+            </StackPanel>
+        </Border>
+
+        <!-- 3. Preferences, Shortcuts & Updates Section -->
+        <StackPanel Orientation="Horizontal" Margin="2,0,0,6">
+            <TextBlock Text="Preferences &amp; Shortcuts" FontSize="13.5" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+            <Border Style="{StaticResource InfoBadge}"
+                    ToolTip="Configure notifications, Windows startup, Start Menu &amp; Desktop shortcuts, and GitHub updates.">
+                <TextBlock Text="i" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource BadgeTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+        </StackPanel>
+
+        <Border Style="{StaticResource FluentCard}" Margin="0,0,0,14">
+            <StackPanel>
+                <!-- Row 1: Notifications -->
+                <Grid Height="44" Margin="16,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="Notifications" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                        <Border Style="{StaticResource InfoBadge}"
+                                ToolTip="Show a brief desktop banner when switching between Docked and Portable modes.">
+                            <TextBlock Text="i" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource BadgeTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </StackPanel>
+                    <CheckBox x:Name="TglNotifications"
+                              Grid.Column="1"
+                              Style="{StaticResource Win11ToggleSwitch}"/>
+                </Grid>
+
+                <Rectangle Height="1" Fill="{DynamicResource RowDividerBrush}" Margin="16,0"/>
+
+                <!-- Row 2: Start with Windows -->
+                <Grid Height="44" Margin="16,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="Start with Windows" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                        <Border Style="{StaticResource InfoBadge}"
+                                ToolTip="Automatically launch LidGuard minimized in the system tray when you sign in to Windows.">
+                            <TextBlock Text="i" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource BadgeTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </StackPanel>
+                    <CheckBox x:Name="TglStartup"
+                              Grid.Column="1"
+                              Style="{StaticResource Win11ToggleSwitch}"/>
+                </Grid>
+
+                <Rectangle Height="1" Fill="{DynamicResource RowDividerBrush}" Margin="16,0"/>
+
+                <!-- Row 3: Start Menu Shortcut -->
+                <Grid Height="44" Margin="16,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="Start Menu Shortcut" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                        <Border Style="{StaticResource InfoBadge}"
+                                ToolTip="Keep a LidGuard shortcut in the Windows Start Menu Programs list.">
+                            <TextBlock Text="i" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource BadgeTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </StackPanel>
+                    <CheckBox x:Name="TglStartMenuShortcut"
+                              Grid.Column="1"
+                              Style="{StaticResource Win11ToggleSwitch}"/>
+                </Grid>
+
+                <Rectangle Height="1" Fill="{DynamicResource RowDividerBrush}" Margin="16,0"/>
+
+                <!-- Row 4: Desktop Shortcut -->
+                <Grid Height="44" Margin="16,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="Desktop Shortcut" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                        <Border Style="{StaticResource InfoBadge}"
+                                ToolTip="Create or remove a LidGuard shortcut on your Windows Desktop.">
+                            <TextBlock Text="i" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource BadgeTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </StackPanel>
+                    <CheckBox x:Name="TglDesktopShortcut"
+                              Grid.Column="1"
+                              Style="{StaticResource Win11ToggleSwitch}"/>
+                </Grid>
+
+                <Rectangle Height="1" Fill="{DynamicResource RowDividerBrush}" Margin="16,0"/>
+
+                <!-- Row 5: GitHub Auto-Updates -->
+                <Grid Height="44" Margin="16,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock x:Name="TxtUpdateLabel" Text="Auto-Check Updates" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                        <Border Style="{StaticResource InfoBadge}"
+                                ToolTip="Checks GitHub Releases (SStarlight9614/Lid-Guard) for newer versions and installs updates.">
+                            <TextBlock Text="i" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource BadgeTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </StackPanel>
+                    <Button x:Name="BtnCheckUpdates"
+                            Grid.Column="1"
+                            Content="Check Now"
+                            Style="{StaticResource Win11Button}"
+                            Height="28"
+                            MinWidth="96"
+                            Margin="0,0,12,0"
+                            VerticalAlignment="Center"
+                            ToolTip="Check GitHub Releases for the latest LidGuard update."/>
+                    <CheckBox x:Name="TglAutoUpdates"
+                              Grid.Column="2"
+                              Style="{StaticResource Win11ToggleSwitch}"
+                              ToolTip="Automatically check GitHub Releases for updates in the background."/>
+                </Grid>
+            </StackPanel>
+        </Border>
+
+        <!-- 4. Tray Menu Shortcuts Section -->
+        <StackPanel Orientation="Horizontal" Margin="2,0,0,6">
+            <TextBlock Text="Tray Menu Shortcuts" FontSize="13.5" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+            <Border Style="{StaticResource InfoBadge}"
+                    ToolTip="By default, right-clicking the tray icon shows only 'Open Settings' and 'Exit'. Toggle on any extra shortcuts you want shown on right-click.">
+                <TextBlock Text="i" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource BadgeTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+        </StackPanel>
+
+        <Border Style="{StaticResource FluentCard}" Margin="0,0,0,16">
+            <StackPanel>
+                <!-- Item 1: Live Status Line -->
+                <Grid Height="42" Margin="16,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="Live Status Line" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                        <Border Style="{StaticResource InfoBadge}"
+                                ToolTip="Show current Lid &amp; Power Mode summary line in the right-click tray menu.">
+                            <TextBlock Text="i" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource BadgeTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </StackPanel>
+                    <CheckBox x:Name="TglTrayStatus" Grid.Column="1" Style="{StaticResource Win11ToggleSwitch}"/>
+                </Grid>
+
+                <Rectangle Height="1" Fill="{DynamicResource RowDividerBrush}" Margin="16,0"/>
+
+                <!-- Item 2: Lid Auto Toggle -->
+                <Grid Height="42" Margin="16,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="Lid Auto Toggle" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                        <Border Style="{StaticResource InfoBadge}"
+                                ToolTip="Show a quick toggle for Auto Lid Close in the right-click tray menu.">
+                            <TextBlock Text="i" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource BadgeTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </StackPanel>
+                    <CheckBox x:Name="TglTrayLid" Grid.Column="1" Style="{StaticResource Win11ToggleSwitch}"/>
+                </Grid>
+
+                <Rectangle Height="1" Fill="{DynamicResource RowDividerBrush}" Margin="16,0"/>
+
+                <!-- Item 3: Power Mode Toggle -->
+                <Grid Height="42" Margin="16,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="Power Mode Toggle" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                        <Border Style="{StaticResource InfoBadge}"
+                                ToolTip="Show a quick toggle for Auto High Power Mode in the right-click tray menu.">
+                            <TextBlock Text="i" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource BadgeTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </StackPanel>
+                    <CheckBox x:Name="TglTrayPower" Grid.Column="1" Style="{StaticResource Win11ToggleSwitch}"/>
+                </Grid>
+
+                <Rectangle Height="1" Fill="{DynamicResource RowDividerBrush}" Margin="16,0"/>
+
+                <!-- Item 4: Refresh Action -->
+                <Grid Height="42" Margin="16,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="Refresh Displays Action" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                        <Border Style="{StaticResource InfoBadge}"
+                                ToolTip="Show 'Refresh Displays' action in the right-click tray menu.">
+                            <TextBlock Text="i" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource BadgeTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </StackPanel>
+                    <CheckBox x:Name="TglTrayRefresh" Grid.Column="1" Style="{StaticResource Win11ToggleSwitch}"/>
+                </Grid>
+            </StackPanel>
+        </Border>
+
+        <!-- 5. Footer Buttons -->
+        <Grid Margin="0,2,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <Button x:Name="BtnRefresh"
+                    Grid.Column="0"
+                    Content="Refresh"
+                    Style="{StaticResource Win11Button}"
+                    MinWidth="94"
+                    Height="34"
+                    Margin="0,0,10,0"
+                    ToolTip="Re-detect connected displays and apply power settings immediately."/>
+
+            <Button x:Name="BtnWinPower"
+                    Grid.Column="1"
+                    Content="Windows Lid Settings"
+                    Style="{StaticResource Win11Button}"
+                    MinWidth="162"
+                    Height="34"
+                    ToolTip="Open classic Windows Control Panel Lid Close settings."/>
+
+            <Button x:Name="BtnDone"
+                    Grid.Column="3"
+                    Content="Done"
+                    Style="{StaticResource Win11AccentButton}"
+                    MinWidth="98"
+                    Height="34"
+                    ToolTip="Minimize LidGuard to the system tray."/>
+        </Grid>
+
+    </StackPanel>
+</Window>

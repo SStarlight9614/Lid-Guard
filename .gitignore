@@ -1,0 +1,6 @@
+# Ignore compiled binaries and temporary update swap files so Git commits only track source changes
+*.exe
+*.old
+*.update
+*.pdb
+*.lnk
