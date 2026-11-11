@@ -366,6 +366,15 @@ namespace LidGuard
             _wpfSettings.ShowAndActivate();
         }
 
+        public void RunScreenshotCapture(string outDir)
+        {
+            if (_wpfSettings == null || _wpfSettings.IsClosed)
+            {
+                _wpfSettings = new LidGuardWpfController(this);
+            }
+            _wpfSettings.CaptureBothTabsToDirectory(outDir);
+        }
+
         public void SetLidMode(LidOperatingMode mode)
         {
             CurrentLidMode = mode;
@@ -976,51 +985,38 @@ namespace LidGuard
 
             foreach (string repo in reposToTry)
             {
-                // 1. Check GitHub Releases first for manual packaged releases
+                // Strictly check GitHub Releases (/releases/latest) so intermediate code commits do not trigger updates
                 try
                 {
                     string apiUrl = string.Format("https://api.github.com/repos/{0}/releases/latest", repo);
                     string json = DownloadStringWithUA(apiUrl);
                     if (!string.IsNullOrEmpty(json))
                     {
-                        string tag = CleanVersion(ExtractJsonString(json, "tag_name"));
-                        string dlUrl = ExtractJsonString(json, "browser_download_url");
+                        string rawTag = ExtractJsonString(json, "tag_name");
+                        string tag = CleanVersion(rawTag);
                         string body = ExtractJsonString(json, "body");
 
-                        if (!string.IsNullOrEmpty(tag) && !string.IsNullOrEmpty(dlUrl))
+                        if (!string.IsNullOrEmpty(tag))
                         {
+                            // Look specifically for LidGuard.exe in release assets (excluding LidGuardInstaller.exe)
+                            string appAssetUrl = null;
+                            Match mAsset = Regex.Match(
+                                json,
+                                "\"browser_download_url\"\\s*:\\s*\"([^\"]+/LidGuard\\.exe)\"",
+                                RegexOptions.IgnoreCase);
+                            if (mAsset.Success)
+                            {
+                                appAssetUrl = mAsset.Groups[1].Value;
+                            }
+
                             bool newer = IsVersionNewer(CurrentVersion, tag);
                             return new UpdateInfo
                             {
                                 LatestVersion = tag,
-                                DownloadUrl = dlUrl,
+                                DownloadUrl = !string.IsNullOrEmpty(appAssetUrl)
+                                    ? appAssetUrl
+                                    : ("RELEASE_TAG:" + (!string.IsNullOrEmpty(rawTag) ? rawTag : ("v" + tag))),
                                 Notes = body,
-                                IsNewer = newer
-                            };
-                        }
-                    }
-                }
-                catch { }
-
-                // 2. Check version.json in the main repository branch (https://github.com/SStarlight9614/Lid-Guard)
-                try
-                {
-                    string versionUrl = string.Format("https://raw.githubusercontent.com/{0}/main/version.json", repo);
-                    string vJson = DownloadStringWithUA(versionUrl);
-                    if (!string.IsNullOrEmpty(vJson))
-                    {
-                        string ver = CleanVersion(ExtractJsonString(vJson, "version"));
-                        string dlUrl = ExtractJsonString(vJson, "download_url");
-                        string notes = ExtractJsonString(vJson, "notes");
-
-                        if (!string.IsNullOrEmpty(ver))
-                        {
-                            bool newer = IsVersionNewer(CurrentVersion, ver);
-                            return new UpdateInfo
-                            {
-                                LatestVersion = ver,
-                                DownloadUrl = !string.IsNullOrEmpty(dlUrl) ? dlUrl : "REPO_SOURCE:" + repo,
-                                Notes = notes,
                                 IsNewer = newer
                             };
                         }
@@ -1053,8 +1049,8 @@ namespace LidGuard
 
                 bool acquiredBinary = false;
 
-                // Try downloading prebuilt release binary first if a direct .exe URL is present
-                if (!string.IsNullOrEmpty(info.DownloadUrl) && !info.DownloadUrl.StartsWith("REPO_SOURCE:", StringComparison.OrdinalIgnoreCase))
+                // Try downloading prebuilt release binary first if a direct LidGuard.exe asset URL is present
+                if (!string.IsNullOrEmpty(info.DownloadUrl) && !info.DownloadUrl.StartsWith("RELEASE_TAG:", StringComparison.OrdinalIgnoreCase))
                 {
                     try
                     {
@@ -1073,14 +1069,20 @@ namespace LidGuard
                     catch { }
                 }
 
-                // Fallback: Download latest source files from SStarlight9614/Lid-Guard and compile 64-bit LidGuard.exe
+                // If the release published LidGuardInstaller.exe without a separate LidGuard.exe binary, build from the release tag
                 if (!acquiredBinary)
                 {
                     string repo = GetConfiguredRepo();
+                    string releaseRef = "main";
+                    if (!string.IsNullOrEmpty(info.DownloadUrl) && info.DownloadUrl.StartsWith("RELEASE_TAG:", StringComparison.OrdinalIgnoreCase))
+                    {
+                        releaseRef = info.DownloadUrl.Substring("RELEASE_TAG:".Length).Trim();
+                    }
+
                     string buildDir = Path.Combine(Path.GetTempPath(), "LidGuardUpdate_" + Guid.NewGuid().ToString("N").Substring(0, 8));
                     Directory.CreateDirectory(buildDir);
 
-                    string rawBase = string.Format("https://raw.githubusercontent.com/{0}/main/", repo);
+                    string rawBase = string.Format("https://raw.githubusercontent.com/{0}/{1}/", repo, releaseRef);
                     string csPath = Path.Combine(buildDir, "LidGuard.cs");
                     string xamlPath = Path.Combine(buildDir, "LidGuardWindow.xaml");
                     string icoPath = Path.Combine(buildDir, "LidGuard.ico");
@@ -1759,10 +1761,16 @@ namespace LidGuard
                         BitmapDecoder decoder = BitmapDecoder.Create(s, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad);
                         if (decoder.Frames.Count > 0)
                         {
-                            _window.Icon = decoder.Frames[0];
+                            BitmapFrame bestFrame = decoder.Frames[0];
+                            foreach (BitmapFrame f in decoder.Frames)
+                            {
+                                if (f.PixelWidth > bestFrame.PixelWidth)
+                                    bestFrame = f;
+                            }
+                            _window.Icon = bestFrame;
                             if (_aboutAppIcon != null)
                             {
-                                _aboutAppIcon.Source = decoder.Frames[0];
+                                _aboutAppIcon.Source = bestFrame;
                             }
                             return;
                         }
@@ -1948,6 +1956,74 @@ namespace LidGuard
             _window.Topmost = true;
             _window.Topmost = false;
             _window.Focus();
+        }
+
+        public void CaptureBothTabsToDirectory(string outDir)
+        {
+            bool isDark = ThemeManager.IsSystemDarkTheme();
+            ThemeManager.UpdateResourceBrushes(_window, isDark, false);
+            RefreshFromContext();
+            if (_txtAboutInstallPath != null)
+            {
+                _txtAboutInstallPath.Text = @"C:\Program Files\LidGuard";
+            }
+
+            SwitchTab(false);
+            CaptureCurrentWindowPng(Path.Combine(outDir, "screenshot-settings.png"));
+
+            SwitchTab(true);
+            CaptureCurrentWindowPng(Path.Combine(outDir, "screenshot-about.png"));
+        }
+
+        private void CaptureCurrentWindowPng(string outPath)
+        {
+            try
+            {
+                var content = _window.Content as System.Windows.FrameworkElement;
+                if (content == null) return;
+
+                double winWidth = _window.Width > 0 ? _window.Width : 480;
+                content.Measure(new System.Windows.Size(winWidth, double.PositiveInfinity));
+                double desiredH = content.DesiredSize.Height + 38;
+                content.Arrange(new System.Windows.Rect(0, 0, winWidth, desiredH));
+                content.UpdateLayout();
+
+                int width = (int)Math.Ceiling(winWidth);
+                int height = (int)Math.Ceiling(desiredH);
+                if (width <= 0 || height <= 0) return;
+
+                DrawingVisual dv = new DrawingVisual();
+                using (DrawingContext dc = dv.RenderOpen())
+                {
+                    bool isDark = ThemeManager.IsSystemDarkTheme();
+                    WpfColor bgCol = isDark ? WpfColor.FromRgb(32, 32, 32) : WpfColor.FromRgb(243, 243, 243);
+                    WpfColor borderCol = isDark ? WpfColor.FromRgb(64, 64, 64) : WpfColor.FromRgb(210, 210, 210);
+                    dc.DrawRoundedRectangle(
+                        new SolidColorBrush(bgCol),
+                        new System.Windows.Media.Pen(new SolidColorBrush(borderCol), 1.5),
+                        new System.Windows.Rect(0, 0, width, height),
+                        10, 10);
+
+                    VisualBrush vb = new VisualBrush(content)
+                    {
+                        Stretch = Stretch.None,
+                        AlignmentX = AlignmentX.Center,
+                        AlignmentY = AlignmentY.Top
+                    };
+                    dc.DrawRectangle(vb, null, new System.Windows.Rect(0, 8, width, height - 16));
+                }
+
+                RenderTargetBitmap rtb = new RenderTargetBitmap(width * 2, height * 2, 192, 192, PixelFormats.Pbgra32);
+                rtb.Render(dv);
+
+                PngBitmapEncoder encoder = new PngBitmapEncoder();
+                encoder.Frames.Add(BitmapFrame.Create(rtb));
+                using (FileStream fs = new FileStream(outPath, FileMode.Create, FileAccess.Write))
+                {
+                    encoder.Save(fs);
+                }
+            }
+            catch { }
         }
 
         public void ForceClose()
@@ -2427,6 +2503,15 @@ namespace LidGuard
                         Registry.CurrentUser.DeleteSubKeyTree(@"Software\Microsoft\Windows\CurrentVersion\Uninstall\LidGuard", false);
                     }
                     catch { }
+                    return;
+                }
+                if (args[0] == "--capture-screenshots" && args.Length > 1)
+                {
+                    Application.EnableVisualStyles();
+                    Application.SetCompatibleTextRenderingDefault(false);
+                    var ctx = new LidGuardAppContext(false);
+                    ctx.RunScreenshotCapture(args[1]);
+                    ctx.ExitApp();
                     return;
                 }
                 if (args[0] == "--minimized")

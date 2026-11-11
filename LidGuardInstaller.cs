@@ -703,9 +703,17 @@ namespace LidGuardInstaller
                 {
                     if (iconStream != null)
                     {
-                        BitmapFrame frame = BitmapFrame.Create(iconStream, BitmapCreateOptions.None, BitmapCacheOption.OnLoad);
-                        window.Icon = frame;
-                        if (headerIcon != null) headerIcon.Source = frame;
+                        BitmapDecoder dec = BitmapDecoder.Create(iconStream, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad);
+                        if (dec.Frames.Count > 0)
+                        {
+                            BitmapFrame best = dec.Frames[0];
+                            foreach (BitmapFrame f in dec.Frames)
+                            {
+                                if (f.PixelWidth > best.PixelWidth) best = f;
+                            }
+                            window.Icon = best;
+                            if (headerIcon != null) headerIcon.Source = best;
+                        }
                     }
                 }
             }
@@ -723,6 +731,86 @@ namespace LidGuardInstaller
 
             Application app = new Application();
             app.Run(window);
+        }
+
+        public void CaptureScreenshotToFile(string outPath)
+        {
+            using (Stream s = new MemoryStream(Encoding.UTF8.GetBytes(InstallerXaml)))
+            {
+                window = (Window)XamlReader.Load(s);
+            }
+
+            Image headerIcon = (Image)window.FindName("HeaderIcon");
+            TextBlock txtInstallPath = (TextBlock)window.FindName("TxtInstallPath");
+            string targetDir = SetupEngine.GetArchitectureInstallDirectory();
+            txtInstallPath.Text = targetDir;
+
+            try
+            {
+                using (Stream iconStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("LidGuard.ico"))
+                {
+                    if (iconStream != null)
+                    {
+                        BitmapDecoder dec = BitmapDecoder.Create(iconStream, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad);
+                        if (dec.Frames.Count > 0)
+                        {
+                            BitmapFrame best = dec.Frames[0];
+                            foreach (BitmapFrame f in dec.Frames)
+                            {
+                                if (f.PixelWidth > best.PixelWidth) best = f;
+                            }
+                            window.Icon = best;
+                            if (headerIcon != null) headerIcon.Source = best;
+                        }
+                    }
+                }
+            }
+            catch { }
+
+            ApplyTheme();
+
+            FrameworkElement content = window.Content as FrameworkElement;
+            if (content == null) return;
+
+            double winWidth = window.Width > 0 ? window.Width : 460;
+            content.Measure(new Size(winWidth, double.PositiveInfinity));
+            double desiredH = content.DesiredSize.Height + 36;
+            content.Arrange(new Rect(0, 0, winWidth, desiredH));
+            content.UpdateLayout();
+
+            int width = (int)Math.Ceiling(winWidth);
+            int height = (int)Math.Ceiling(desiredH);
+
+            DrawingVisual dv = new DrawingVisual();
+            using (DrawingContext dc = dv.RenderOpen())
+            {
+                bool isLight = ThemeHelper.IsSystemLightTheme();
+                Color bgCol = isLight ? Color.FromRgb(0xF3, 0xF3, 0xF3) : Color.FromRgb(0x20, 0x20, 0x20);
+                Color borderCol = isLight ? Color.FromRgb(0xD2, 0xD2, 0xD2) : Color.FromRgb(0x40, 0x40, 0x40);
+                dc.DrawRoundedRectangle(
+                    new SolidColorBrush(bgCol),
+                    new Pen(new SolidColorBrush(borderCol), 1.5),
+                    new Rect(0, 0, width, height),
+                    10, 10);
+
+                VisualBrush vb = new VisualBrush(content)
+                {
+                    Stretch = Stretch.None,
+                    AlignmentX = AlignmentX.Center,
+                    AlignmentY = AlignmentY.Top
+                };
+                dc.DrawRectangle(vb, null, new Rect(0, 8, width, height - 16));
+            }
+
+            RenderTargetBitmap rtb = new RenderTargetBitmap(width * 2, height * 2, 192, 192, PixelFormats.Pbgra32);
+            rtb.Render(dv);
+
+            PngBitmapEncoder encoder = new PngBitmapEncoder();
+            encoder.Frames.Add(BitmapFrame.Create(rtb));
+            using (FileStream fs = new FileStream(outPath, FileMode.Create, FileAccess.Write))
+            {
+                encoder.Save(fs);
+            }
         }
 
         private void ApplyTheme()
@@ -856,6 +944,13 @@ namespace LidGuardInstaller
         [STAThread]
         private static int Main(string[] args)
         {
+            if (args != null && args.Length >= 2 && string.Equals(args[0], "--capture-screenshot", StringComparison.OrdinalIgnoreCase))
+            {
+                InstallerApp capApp = new InstallerApp();
+                capApp.CaptureScreenshotToFile(args[1]);
+                return 0;
+            }
+
             if (args != null && args.Length >= 1 && string.Equals(args[0], "--test-fetch", StringComparison.OrdinalIgnoreCase))
             {
                 try
